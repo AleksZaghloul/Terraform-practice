@@ -46,8 +46,11 @@ resource "aws_security_group" "webserver"{
 }
 
 resource "aws_instance" "webserver" {
+  count = 2
+
   ami           = "ami-00af37d1144686454"
   instance_type = "t2.micro"
+
   vpc_security_group_ids = [
     aws_security_group.webserver.id
     ]
@@ -57,7 +60,7 @@ resource "aws_instance" "webserver" {
   }
 }
 resource "aws_eip_association" "webserver" {
-  instance_id   = aws_instance.webserver.id
+  instance_id   = aws_instance.webserver.0.id
   allocation_id = aws_eip.webserver.id
   
 }
