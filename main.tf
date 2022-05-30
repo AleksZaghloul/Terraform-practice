@@ -28,6 +28,20 @@ resource "aws_s3_bucket" "terraform_course"{
 
 resource "aws_default_vpc" "default" {}
 
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = "us-west-2a"
+  tags = {
+    "Terraform" = "True"
+  }
+}
+
+resource "aws_default_subnet" "default_az2" {
+  availability_zone = "us-west-2b"
+  tags = {
+    "Terraform" = "True"
+  }
+}
+
 resource "aws_security_group" "webserver"{
   name = "terraform-webserver"
   description = "Allow http and https access"
@@ -83,4 +97,19 @@ resource "aws_eip" "webserver"{
   tags = {
     "Terraform" = "True"
   }
+}
+
+resource "aws_elb" "webserver"{
+  name      = "terraform-elb"
+  instances = aws_instance.webserver.*.id
+  subnets   = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
+  security_groups = [aws_security_group.webserver.id]
+
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
 }
