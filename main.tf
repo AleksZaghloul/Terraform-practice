@@ -14,6 +14,20 @@ provider "aws" {
   region  = "us-west-2"
 }
 
+resource "aws_s3_bucket_acl" "terraform_course" {
+  bucket = aws_s3_bucket.terraform_course.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket" "terraform_course"{
+  bucket            = "tf-course-20220530"
+  tags = {
+    "Terraform" = "True"
+  }
+}
+
+resource "aws_default_vpc" "default" {}
+
 resource "aws_security_group" "webserver"{
   name = "terraform-webserver"
   description = "Allow http and https access"
