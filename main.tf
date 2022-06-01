@@ -1,3 +1,29 @@
+variable "cidr" {
+  type = list(string)
+  description = "traffic permitted"
+}
+variable "web_image_id" {
+  type = string
+  description = "web AMI"
+}
+variable "web_ec2_type" {
+  type = string
+  description = "web instance type "
+}
+variable "web_desired_cap" {
+  type = number
+}
+variable "web_min_cap" {
+  type = number
+}
+variable "web_max_cap" {
+  type = number
+}
+variable "myIP" {
+  type = list(string)
+}
+
+
 terraform {
   required_providers {
     aws = {
@@ -39,21 +65,21 @@ resource "aws_security_group" "webserver"{
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.cidr
   }
 
   ingress{
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["148.252.128.192/32"]
+    cidr_blocks = var.cidr
   }
 
   ingress{
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.cidr
   }
   
 
@@ -84,17 +110,17 @@ resource "aws_elb" "webserver"{
 }
 resource "aws_launch_template" "challenge" {
   name_prefix   = "challenge"
-  image_id      = "ami-00af37d1144686454"
-  instance_type = "t2.micro"
+  image_id      = var.web_image_id
+  instance_type = var.web_ec2_type
   vpc_security_group_ids = [aws_security_group.webserver.id]
   user_data = filebase64("user_data.sh")
 }
 
 resource "aws_autoscaling_group" "challenge" {
   availability_zones = ["us-west-2a", "us-west-2b"]
-  desired_capacity   = 2
-  max_size           = 2
-  min_size           = 2
+  desired_capacity   = var.web_desired_cap
+  max_size           = var.web_max_cap
+  min_size           = var.web_min_cap
 
   launch_template {
     id      = aws_launch_template.challenge.id
